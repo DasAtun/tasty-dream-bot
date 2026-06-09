@@ -14,7 +14,7 @@ const characters = [
 ];
 
 bot.start((ctx) => {
-  ctx.replyWithMarkdownV2('✨ *¡Bienvenido a Tasty Dream\!* ✨\n\nElegí un personaje:', 
+  ctx.reply('✨ ¡Bienvenido a Tasty Dream! ✨\n\nElegí un personaje:', 
     Markup.inlineKeyboard(characters.map(c => [Markup.button.callback(`${c.avatar} ${c.name}`, `sel_${c.slug}`)]))
   );
 });
