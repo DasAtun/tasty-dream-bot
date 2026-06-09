@@ -33,11 +33,24 @@ bot.command(['imagen', 'image'], async (ctx) => {
 
 bot.on('text', async (ctx) => {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Usamos gemini-1.5-flash que es más rápido y estable
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      // Esto desactiva los filtros para que no te dé error por cualquier cosa
+      safetySettings: [
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+      ]
+    });
+
     const result = await model.generateContent(ctx.message.text);
-    ctx.reply(result.response.text());
+    const response = await result.response;
+    ctx.reply(response.text());
   } catch (e) {
-    ctx.reply("❌ Error con la IA.");
+    console.error(e); // Esto imprimirá el error real en los logs de Render
+    ctx.reply("❌ La IA está tímida hoy, probá escribirle otra cosa.");
   }
 });
 
