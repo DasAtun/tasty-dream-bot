@@ -37,7 +37,7 @@ bot.command(['imagen', 'image'], async (ctx) => {
 bot.on('text', async (ctx) => {
   try {
     const char = userSelectedChar.get(ctx.from.id) || characters[0];
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const promptCompleto = `${char.prompt}\n\nUsuario dice: ${ctx.message.text}\nTu respuesta corta:`;
     const result = await model.generateContent(promptCompleto);
     ctx.reply(result.response.text());
