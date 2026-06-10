@@ -31,19 +31,33 @@ bot.command(['imagen', 'image'], async (ctx) => {
   await ctx.replyWithPhoto(imgUrl, { caption: 'Aquí tenés tu foto... 🔥' });
 });
 
+// Variable para guardar qué personaje eligió cada usuario
+const userSelectedChar = new Map();
+
+bot.action(/sel_(.+)/, async (ctx) => {
+  const charSlug = ctx.match[1];
+  const char = characters.find(c => c.slug === charSlug);
+  userSelectedChar.set(ctx.from.id, char); // Guardamos la elección
+  await ctx.answerCbQuery();
+  ctx.reply(`✅ Elegiste a ${char.name}. ¡Escribile algo!`);
+});
+
 bot.on('text', async (ctx) => {
   try {
-    // Usamos gemini-1.5-flash que es más rápido y estable
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      // Esto desactiva los filtros para que no te dé error por cualquier cosa
-      safetySettings: [
-        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-      ]
-    });
+    const char = userSelectedChar.get(ctx.from.id) || characters[0]; // Valentina por defecto
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // Le pasamos el PROMPT del personaje + el mensaje del usuario
+    const promptCompleto = `${char.prompt}\n\nUsuario dice: ${ctx.message.text}\nTu respuesta corta y en español:`;
+    
+    const result = await model.generateContent(promptCompleto);
+    const response = await result.response;
+    ctx.reply(response.text());
+  } catch (e) {
+    console.error("Error Gemini:", e);
+    ctx.reply("❌ Hubo un pequeño error en el sueño, probá de nuevo.");
+  }
+});
 
     const result = await model.generateContent(ctx.message.text);
     const response = await result.response;
